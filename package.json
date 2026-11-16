@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express-session": "^1.19.0"
+  },
+  "scripts": {
+    "start": "cd Gamela_Pro_V2 && node backend/server.js"
+  }
+}
