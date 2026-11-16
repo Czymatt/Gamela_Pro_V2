@@ -2,9 +2,9 @@
   "name": "proyectogamelapro",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
