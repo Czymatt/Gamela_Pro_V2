@@ -101,8 +101,132 @@ function exigirRol(rol) {
 }
 
 // ======================================
+// REGISTRO DE USUARIOS
+// ======================================
+
+router.post("/registro", async (req, res) => {
+    try {
+        const nombre = String(req.body.nombre || "")
+            .trim();
+
+        const email = String(req.body.email || "")
+            .trim()
+            .toLowerCase();
+
+        const password = String(req.body.password || "");
+
+        // Validaciones
+        if (!nombre || !email || !password) {
+            return res.status(400).json({
+                exito: false,
+                mensaje: "Completá todos los campos."
+            });
+        }
+
+        if (nombre.length > 100) {
+            return res.status(400).json({
+                exito: false,
+                mensaje: "El nombre no puede superar los 100 caracteres."
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                exito: false,
+                mensaje: "La contraseña debe tener al menos 6 caracteres."
+            });
+        }
+
+        // Cliente de Supabase para registrar al usuario
+        const clienteRegistro = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_ANON_KEY,
+            {
+                auth: {
+                    persistSession: false,
+                    autoRefreshToken: false,
+                    detectSessionInUrl: false
+                }
+            }
+        );
+
+        // Crear usuario en Supabase Auth
+        const { data, error } =
+            await clienteRegistro.auth.signUp({
+                email,
+                password,
+
+                options: {
+                    data: {
+                        nombre,
+                        usuario: email.split("@")[0]
+                    }
+                }
+            });
+
+        if (error) {
+            return res.status(400).json({
+                exito: false,
+                mensaje: error.message
+            });
+        }
+
+        // Supabase puede requerir confirmación del correo.
+        if (!data.session) {
+            return res.json({
+                exito: true,
+                mensaje:
+                    "Cuenta creada correctamente. " +
+                    "Revisá tu correo electrónico para confirmar el registro."
+            });
+        }
+
+        // Si se devuelve una sesión, buscamos el perfil
+        // creado automáticamente por el trigger de Supabase.
+        const supabase = crearCliente(
+            data.session.access_token
+        );
+
+        const { data: perfil, error: perfilError } =
+            await supabase
+                .from("perfiles")
+                .select("id, usuario, nombre, rol")
+                .eq("id", data.user.id)
+                .single();
+
+        if (perfilError || !perfil) {
+            return res.status(500).json({
+                exito: false,
+                mensaje:
+                    "La cuenta fue creada, pero no se pudo " +
+                    "obtener el perfil. Contactá al administrador."
+            });
+        }
+
+        return res.json({
+            exito: true,
+            mensaje: "Cuenta creada correctamente.",
+
+            usuario: perfil,
+
+            access_token: data.session.access_token,
+
+            refresh_token: data.session.refresh_token
+        });
+
+    } catch (error) {
+        return responderError(
+            res,
+            error,
+            "Ocurrió un error al registrar la cuenta."
+        );
+    }
+});
+
+// ======================================
 // LOGIN
 // ======================================
+
 
 router.post("/login", async (req, res) => {
     try {
