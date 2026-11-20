@@ -140,9 +140,9 @@ function opcionesTrabajadores() {
 }
 
 function ir(pantalla) {
-    if (!usuarioActual && pantalla !== "login") {
-        pantalla = "login";
-    }
+    if (!usuarioActual && pantalla !== "login" && pantalla !== "registro") {
+    pantalla = "login";
+}
 
     if (pantalla === "contratista" && usuarioActual?.rol !== "contratista") {
         pantalla = "menu";
