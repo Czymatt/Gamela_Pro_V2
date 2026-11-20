@@ -215,184 +215,52 @@ function renderLogin() {
         .addEventListener("submit", iniciarSesion);
 }
 
-// ======================================
-// REGISTRO DE CUENTAS
-// ======================================
-
 function renderRegistro() {
     userInfo.hidden = true;
 
     app.innerHTML = `
         <section class="gp-panel">
             <h2>Crear cuenta</h2>
-
-            <p>
-                Registrate para comenzar a utilizar Gamela Pro.
-            </p>
+            <p>Registrate en Gamela Pro.</p>
 
             <form id="registro-form">
-
-                <label for="registro-nombre">
-                    Nombre completo
-                </label>
-
-                <input
-                    id="registro-nombre"
+                <label for="registro-nombre">Nombre completo</label>
+                <input id="registro-nombre"
                     type="text"
-                    maxlength="100"
-                    autocomplete="name"
                     required
+                    maxlength="100"
                     placeholder="Tu nombre">
 
-                <label for="registro-email">
-                    Correo electrónico
-                </label>
-
-                <input
-                    id="registro-email"
+                <label for="registro-email">Correo electrónico</label>
+                <input id="registro-email"
                     type="email"
-                    autocomplete="email"
                     required
                     placeholder="ejemplo@correo.com">
 
-                <label for="registro-password">
-                    Contraseña
-                </label>
-
-                <input
-                    id="registro-password"
+                <label for="registro-password">Contraseña</label>
+                <input id="registro-password"
                     type="password"
-                    minlength="6"
-                    autocomplete="new-password"
                     required
+                    minlength="6"
                     placeholder="Mínimo 6 caracteres">
 
-                <label for="registro-confirmar">
-                    Confirmar contraseña
-                </label>
-
-                <input
-                    id="registro-confirmar"
+                <label for="registro-confirmar">Confirmar contraseña</label>
+                <input id="registro-confirmar"
                     type="password"
-                    minlength="6"
-                    autocomplete="new-password"
-                    required>
+                    required
+                    minlength="6">
 
-                <button type="submit">
-                    Crear cuenta
-                </button>
+                <button type="submit">Registrarme</button>
             </form>
 
             <button class="gp-secondary" data-go="login">
-                Volver al inicio de sesión
+                Volver al inicio
             </button>
-
-            <p class="gp-help">
-                Las cuentas nuevas se registran automáticamente
-                como trabajadores.
-            </p>
         </section>
     `;
 
     document.getElementById("registro-form")
         .addEventListener("submit", registrarCuenta);
-}
-
-async function registrarCuenta(evento) {
-    evento.preventDefault();
-
-    const boton = document.querySelector(
-        '#registro-form button[type="submit"]'
-    );
-
-    const nombre = document.getElementById("registro-nombre")
-        .value.trim();
-
-    const email = document.getElementById("registro-email")
-        .value.trim().toLowerCase();
-
-    const password = document.getElementById("registro-password")
-        .value;
-
-    const confirmar = document.getElementById("registro-confirmar")
-        .value;
-
-    if (password !== confirmar) {
-        mensaje("Las contraseñas no coinciden.", "error");
-        return;
-    }
-
-    if (password.length < 6) {
-        mensaje(
-            "La contraseña debe tener al menos 6 caracteres.",
-            "error"
-        );
-        return;
-    }
-
-    boton.disabled = true;
-    boton.textContent = "Creando cuenta...";
-
-    try {
-        const respuesta = await fetch("/api/auth/registro", {
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                nombre,
-                email,
-                password
-            })
-        });
-
-        const resultado = await respuesta.json();
-
-        if (!respuesta.ok || !resultado.exito) {
-            throw new Error(
-                resultado.mensaje || "No se pudo crear la cuenta."
-            );
-        }
-
-        // Si Supabase devuelve una sesión automáticamente,
-        // iniciamos sesión sin pedir los datos nuevamente.
-        if (resultado.access_token && resultado.usuario) {
-            tokenSesion = resultado.access_token;
-            usuarioActual = resultado.usuario;
-
-            await cargarDatos();
-
-            userName.textContent =
-                `${usuarioActual.nombre} (${usuarioActual.rol})`;
-
-            userInfo.hidden = false;
-
-            ir("menu");
-
-            mensaje(
-                "Cuenta creada correctamente. ¡Bienvenido a Gamela Pro!"
-            );
-
-        } else {
-            // Si Supabase requiere confirmar el correo,
-            // mostramos el mensaje y volvemos al login.
-            ir("login");
-
-            mensaje(
-                resultado.mensaje ||
-                "Cuenta creada. Revisá tu correo para confirmarla."
-            );
-        }
-
-    } catch (error) {
-        mensaje(error.message, "error");
-
-    } finally {
-        boton.disabled = false;
-        boton.textContent = "Crear cuenta";
-    }
 }
 
 async function iniciarSesion(evento) {
