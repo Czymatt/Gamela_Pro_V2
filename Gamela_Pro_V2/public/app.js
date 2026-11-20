@@ -254,11 +254,12 @@ function renderRegistro() {
         .addEventListener("submit", registrarCuenta);
 }
 
+
 async function registrarCuenta(evento) {
     evento.preventDefault();
 
     const nombre = document.getElementById("registro-nombre").value.trim();
-    const email = document.getElementById("registro-email").value.trim();
+    const email = document.getElementById("registro-email").value.trim().toLowerCase();
     const password = document.getElementById("registro-password").value;
     const confirmar = document.getElementById("registro-confirmar").value;
 
@@ -268,42 +269,32 @@ async function registrarCuenta(evento) {
     }
 
     try {
-        const respuesta = await fetch("/api/auth/registro", {
+        const resultado = await api("/registro", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                nombre,
-                email,
-                password
-            })
+            body: JSON.stringify({ nombre, email, password })
         });
 
-        const resultado = await respuesta.json();
-
-        if (!respuesta.ok) {
-            throw new Error(resultado.error || resultado.mensaje || "No se pudo crear la cuenta.");
-        }
-
-        if (resultado.access_token) {
-            token = resultado.access_token;
+       if (resultado.exito && resultado.access_token) {
+        tokenSesion = resultado.access_token;
             usuarioActual = resultado.usuario;
 
             await cargarDatos();
 
-            actualizarInterfaz();
+            userName.textContent = `${usuarioActual.nombre} (${usuarioActual.rol})`;
+            userInfo.hidden = false;
+
             ir("menu");
             mensaje("¡Cuenta creada correctamente!");
         } else {
-            mensaje(resultado.mensaje || "Cuenta creada. Revisá tu correo para confirmar el registro.");
             ir("login");
+            mensaje(resultado.mensaje || "Revisá tu correo para confirmar el registro.");
         }
 
     } catch (error) {
         mensaje(error.message, "error");
     }
 }
+
 
 
 async function iniciarSesion(evento) {
