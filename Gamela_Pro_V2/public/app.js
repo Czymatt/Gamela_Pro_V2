@@ -202,9 +202,9 @@ function renderLogin() {
                 <button type="submit">Ingresar</button>
             </form>
 
-            <button class="gp-secondary" data-go="registro">
-                Crear cuenta
-            </button>
+            <button type="button" class="gp-secondary" data-go="registro">
+    Crear cuenta
+</button>
 
             <p class="gp-help">
                 Ingresá con el correo y la contraseña registrados.
@@ -219,7 +219,7 @@ function renderLogin() {
 function renderRegistro() {
     userInfo.hidden = true;
 
-    app.innerHTML = `
+    app.innerHTML =
         <section class="gp-panel">
             <h2>Crear cuenta</h2>
             <p>Registrate en Gamela Pro.</p>
@@ -248,7 +248,7 @@ function renderRegistro() {
                 Volver al inicio
             </button>
         </section>
-    `;
+    ;
 
     document.getElementById("registro-form")
         .addEventListener("submit", registrarCuenta);
