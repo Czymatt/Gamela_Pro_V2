@@ -215,6 +215,7 @@ function renderLogin() {
         .addEventListener("submit", iniciarSesion);
 }
 
+
 function renderRegistro() {
     userInfo.hidden = true;
 
@@ -225,30 +226,20 @@ function renderRegistro() {
 
             <form id="registro-form">
                 <label for="registro-nombre">Nombre completo</label>
-                <input id="registro-nombre"
-                    type="text"
-                    required
-                    maxlength="100"
-                    placeholder="Tu nombre">
+                <input id="registro-nombre" type="text"
+                    maxlength="100" required placeholder="Tu nombre">
 
                 <label for="registro-email">Correo electrónico</label>
-                <input id="registro-email"
-                    type="email"
-                    required
-                    placeholder="ejemplo@correo.com">
+                <input id="registro-email" type="email"
+                    required placeholder="ejemplo@correo.com">
 
                 <label for="registro-password">Contraseña</label>
-                <input id="registro-password"
-                    type="password"
-                    required
-                    minlength="6"
-                    placeholder="Mínimo 6 caracteres">
+                <input id="registro-password" type="password"
+                    minlength="6" required>
 
                 <label for="registro-confirmar">Confirmar contraseña</label>
-                <input id="registro-confirmar"
-                    type="password"
-                    required
-                    minlength="6">
+                <input id="registro-confirmar" type="password"
+                    minlength="6" required>
 
                 <button type="submit">Registrarme</button>
             </form>
@@ -262,6 +253,58 @@ function renderRegistro() {
     document.getElementById("registro-form")
         .addEventListener("submit", registrarCuenta);
 }
+
+async function registrarCuenta(evento) {
+    evento.preventDefault();
+
+    const nombre = document.getElementById("registro-nombre").value.trim();
+    const email = document.getElementById("registro-email").value.trim();
+    const password = document.getElementById("registro-password").value;
+    const confirmar = document.getElementById("registro-confirmar").value;
+
+    if (password !== confirmar) {
+        mensaje("Las contraseñas no coinciden.", "error");
+        return;
+    }
+
+    try {
+        const respuesta = await fetch("/api/auth/registro", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                nombre,
+                email,
+                password
+            })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(resultado.error || resultado.mensaje || "No se pudo crear la cuenta.");
+        }
+
+        if (resultado.access_token) {
+            token = resultado.access_token;
+            usuarioActual = resultado.usuario;
+
+            await cargarDatos();
+
+            actualizarInterfaz();
+            ir("menu");
+            mensaje("¡Cuenta creada correctamente!");
+        } else {
+            mensaje(resultado.mensaje || "Cuenta creada. Revisá tu correo para confirmar el registro.");
+            ir("login");
+        }
+
+    } catch (error) {
+        mensaje(error.message, "error");
+    }
+}
+
 
 async function iniciarSesion(evento) {
     evento.preventDefault();
